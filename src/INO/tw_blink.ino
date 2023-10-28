@@ -1,6 +1,6 @@
 
 // ***
-// * if for bare, remember to change User_Setup_Select.h
+// * if for TWATCH_BARE, remember to change User_Setup_Select.h to use Setup45_TTGO_T_Watch.h
 // ***
 
 
@@ -11,7 +11,7 @@
 #else
 
   #include "axp20x.h"
-  #include <TFT_eSPI.h> // Graphics and font library for ST7735 driver chip
+  #include <TFT_eSPI.h>
 
   #define I2C_BUS_SDA   21
   #define I2C_BUS_SCL   22
@@ -21,6 +21,13 @@
 
   AXP20X_Class*   power = new AXP20X_Class();
   TFT_eSPI        tft   = TFT_eSPI();
+
+  #include "focaltech.h"
+
+  #define TOUCH_SDA     (GPIO_NUM_23)
+  #define TOUCH_SCL     (GPIO_NUM_32)
+
+  FocalTech_Class* touch = new FocalTech_Class();
 
 #endif
 
@@ -54,6 +61,10 @@ void setup() {
   ledcAttachPin(TWATCH_TFT_BL, BL_CHANNEL);
   ledcWrite(0, 255);
 
+  // init touch
+  Wire1.begin(TOUCH_SDA, TOUCH_SCL);
+  touch->begin(Wire1);
+
 #endif
 
   tft.fillScreen(TFT_LIGHTGREY);
@@ -81,15 +92,24 @@ void loop() {
     lastMillis = millis();
   }
 
+  if (blink) {
+    tft.fillCircle(120, 120, 50, on ? TFT_RED : TFT_BLUE);
+  }
+
 #if !defined(TWATCH_BARE)
+
   int16_t x, y;
   if (ttgo->getTouch(x, y)) {
     Serial.println(String("- TOUCH: ") + x + " " + y);
   }
+
+#else
+
+  uint16_t x, y;
+  if (touch->getPoint(x, y)) {
+    Serial.println(String("- TOUCH: ") + x + " " + y);
+  }
+
 #endif
 
-
-  if (blink) {
-    tft.fillCircle(120, 120, 50, on ? TFT_RED : TFT_BLUE);
-  }
 }
