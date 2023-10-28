@@ -7,7 +7,7 @@
 #if !defined(TWATCH_BARE)
 
   #include <LilyGoWatch.h>
-
+  
 #else
 
   #include "axp20x.h"
